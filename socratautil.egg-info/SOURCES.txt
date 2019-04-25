@@ -1,0 +1,9 @@
+README.md
+setup.py
+socratautil/__init__.py
+socratautil/socrautil.py
+socratautil.egg-info/PKG-INFO
+socratautil.egg-info/SOURCES.txt
+socratautil.egg-info/dependency_links.txt
+socratautil.egg-info/requires.txt
+socratautil.egg-info/top_level.txt

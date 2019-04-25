@@ -1,0 +1,9 @@
+*secrets*
+__pycache__
+.env
+.DS_Store
+*.logrotate
+*.key
+*.pem
+*.pyc
+*.zip
