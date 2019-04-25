@@ -2,21 +2,14 @@ Metadata-Version: 2.1
 Name: socratautil
 Version: 0.0.1
 Summary: Utilities interacting with the Socrata Open Data API.
-Home-page: https://github.com/cityofaustin/atd-data-utils-socrata
+Home-page: https://github.com/cityofaustin/atd-utils-socrata
 Author: City of Austin
 Author-email: transportation.data@austintexas.gov
 License: UNKNOWN
-Description: # transportation-data-utils-agol (agoutil)
-        Helper methods to work with [ArcGIS for Python API](http://arcgis.com), mixed in with a few manual [ArcGIS REST API](http://google.com) requests.
-        
-        ## Installation
-        ```
-        # something like
-        # git+https://github.com/cityofaustin/transportation-data-utils-agol.git@master
-        ```
+Description: # transportation-data-utils-socrata (socratautil)
+        Python utilities for interacting with the Socrata Open Data API.
         
         ## License
-        
         As a work of the City of Austin, this project is in the public domain within the United States.
         
         Additionally, we waive copyright and related rights of the work worldwide through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
