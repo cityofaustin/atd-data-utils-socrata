@@ -10,7 +10,8 @@ setuptools.setup(
     author_email="transportation.data@austintexas.gov",
     description="Utilities interacting with the Socrata Open Data API.",
     install_requires=[
-      'requests',
+        "requests",
+        "git+https://github.com/cityofaustin/atd-utils-data.git@master@egg=datautil-0"
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",
