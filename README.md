@@ -1,6 +1,11 @@
-# transportation-data-utils-socrata (socratautil)
+# atd-data-utils-socrata (socratautil)
 Python utilities for interacting with the Socrata Open Data API.
 
+## Installation
+
+```bash
+$ pip install atd_socratautil
+```
 ## License
 As a work of the City of Austin, this project is in the public domain within the United States.
 
