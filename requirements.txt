@@ -1,2 +1,2 @@
 requests
-git+git://github.com/cityofaustin/atd-utils-data.git@master#egg=datautil-0.0.1
+atd_datautil
