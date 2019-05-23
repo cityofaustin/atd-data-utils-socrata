@@ -17,7 +17,8 @@ class Soda(object):
     def __init__(
         self,
         auth=None,
-        fetch_metadata=False,
+        fetch_metadata=True,
+        handle_null_values=True,
         host="data.austintexas.gov",
         records=None,
         resource=None,
@@ -32,6 +33,7 @@ class Soda(object):
 
         self.auth = auth
         self.date_fields = date_fields
+        self.handle_null_values = handle_null_values
         self.host = host
         self.lat_field = lat_field
         self.lon_field = lon_field
@@ -53,18 +55,31 @@ class Soda(object):
         self.url = f"https://{self.host}/resource/{self.resource}.json"
         self.url_metadata = f"https://{self.host}/api/views/{self.resource}.json"
 
+        if fetch_metadata:
+            # required in order to set null values properly
+            self._get_metadata()
+            self._get_fieldnames()
+            self._get_date_fields()
+
+        elif not fetch_metadata and handle_null_values:
+            raise Exception('`fetch_metdata` must be True if `handle_null_values` is True')
+
+        pdb.set_trace()
+
         if self.records:
             self._handle_records()
 
         else:
             self._query()
 
-            if fetch_metadata:
-                self._get_metadata()
-                self._get_fieldnames()
-                self._get_date_fields()
+
+    def _handle_nulls(self):
+        print('yay')
 
     def _handle_records(self):
+
+        self._handle_nulls():
+
         if self.date_fields:
             if self.source == "knack":
                 self.records = mills_to_unix(self.records, self.date_fields)
