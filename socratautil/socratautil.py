@@ -76,7 +76,7 @@ class Soda(object):
         self.records = lower_case_keys(self.records)
 
         # need to handle nulls after lowercase keys or the keys won't match the metdata
-        self._handle_null_strings()
+        self._handle_nulls()
 
         if self.location_field:
             self.records = self._location_fields()
@@ -116,7 +116,6 @@ class Soda(object):
         else:
             res = requests.post(self.url, json=self.records, auth=self.auth)
 
-        pdb.set_trace()
         res.raise_for_status()
         return res.json()
 
@@ -146,19 +145,21 @@ class Soda(object):
         return res.json()
 
 
-    def _handle_null_strings(self):
+    def _handle_nulls(self):
         # Set empty strings to None. Socrata does not allow empty strings.
-        # Convert other objects to strings for good measure
+        # Convert other string field objects to strings for good measure
 
         columns = self.metadata['columns']
         # use this to check out field types
         # list(set([t['dataTypeName'] for t in self.metadata['columns']]))
         #  ['location', 'text', 'number']
-        string_fields = [column['fieldName'] for column in columns if column['dataTypeName'] == 'text']
-
+        fields_strings = [column['fieldName'] for column in columns if column['dataTypeName'] == 'text']
+        
+        fields_numbers = [column['fieldName'] for column in columns if column['dataTypeName'] == 'number']
+        
         for record in self.records:
             for key in record.keys():
-                if key in string_fields:
+                if key in fields_strings:
                     if record[key] == "":
                         # empty strings are not allowed. Set value to null.
                         record[key] = None
@@ -172,6 +173,11 @@ class Soda(object):
                         # Coerce to string.
                         record[key] = str(record[key])
                         continue
+
+                elif key in fields_numbers:
+                    # socrata will not accept an empty string for null number values
+                    if record[key] == "":
+                        record[key] = None
 
         return
 
