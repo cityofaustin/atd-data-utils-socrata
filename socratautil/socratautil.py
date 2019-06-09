@@ -4,36 +4,36 @@ Helper methods for interacting with the Socrata Open Data API (SODS).
 We've chosen to build our own methods rather than use [Sodapy](https://github.com/xmunoz/sodapy)
 in order to handle some common ETL routines, particularly with Knack integration.
 """
+import json
+import os
+
 import requests
 
 from datautil import mills_to_unix, iso_to_unix, lower_case_keys
 
+import pdb
 
 class Soda(object):
     """
     Class to query and publish open data via the Socrata Open Data API (SODA)
     """
-
     def __init__(
         self,
         auth=None,
-        fetch_metadata=True,
-        handle_null_values=True,
-        host="data.austintexas.gov",
-        records=None,
-        resource=None,
-        soql=None,
         date_fields=None,
+        host="data.austintexas.gov",
         lat_field="locaiton_latitude",
         lon_field="location_longitude",
         location_field="location",
-        source="knack",
+        records=None,
         replace=False,
+        resource=None,
+        soql=None,
+        source="knack",
     ):
 
         self.auth = auth
         self.date_fields = date_fields
-        self.handle_null_values = handle_null_values
         self.host = host
         self.lat_field = lat_field
         self.lon_field = lon_field
@@ -55,16 +55,9 @@ class Soda(object):
         self.url = f"https://{self.host}/resource/{self.resource}.json"
         self.url_metadata = f"https://{self.host}/api/views/{self.resource}.json"
 
-        if fetch_metadata:
-            # required in order to set null values properly
-            self._get_metadata()
-            self._get_fieldnames()
-            self._get_date_fields()
-
-        elif not fetch_metadata and handle_null_values:
-            raise Exception('`fetch_metdata` must be True if `handle_null_values` is True')
-
-        pdb.set_trace()
+        self._get_metadata()
+        self._get_fieldnames()
+        self._get_date_fields()
 
         if self.records:
             self._handle_records()
@@ -72,13 +65,7 @@ class Soda(object):
         else:
             self._query()
 
-
-    def _handle_nulls(self):
-        print('yay')
-
     def _handle_records(self):
-
-        self._handle_nulls():
 
         if self.date_fields:
             if self.source == "knack":
@@ -88,12 +75,16 @@ class Soda(object):
 
         self.records = lower_case_keys(self.records)
 
+        # need to handle nulls after lowercase keys or the keys won't match the metdata
+        self._handle_null_strings()
+
         if self.location_field:
             self.records = self._location_fields()
 
         self.res = self._upload()
         self._handle_response()
         return self.res
+
 
     def _location_fields(self):
         """
@@ -117,6 +108,7 @@ class Soda(object):
 
         return self.records
 
+
     def _upload(self):
         if self.replace:
             res = requests.put(self.url, json=self.records, auth=self.auth)
@@ -124,8 +116,10 @@ class Soda(object):
         else:
             res = requests.post(self.url, json=self.records, auth=self.auth)
 
+        pdb.set_trace()
         res.raise_for_status()
         return res.json()
+
 
     def _handle_response(self):
         """
@@ -139,6 +133,7 @@ class Soda(object):
 
         return True
 
+
     def _query(self):
         """
         Query a socrata resource. soql must be a dict formated as { $key : value }
@@ -150,11 +145,44 @@ class Soda(object):
         self.data = res.json()
         return res.json()
 
+
+    def _handle_null_strings(self):
+        # Set empty strings to None. Socrata does not allow empty strings.
+        # Convert other objects to strings for good measure
+
+        columns = self.metadata['columns']
+        # use this to check out field types
+        # list(set([t['dataTypeName'] for t in self.metadata['columns']]))
+        #  ['location', 'text', 'number']
+        string_fields = [column['fieldName'] for column in columns if column['dataTypeName'] == 'text']
+
+        for record in self.records:
+            for key in record.keys():
+                if key in string_fields:
+                    if record[key] == "":
+                        # empty strings are not allowed. Set value to null.
+                        record[key] = None
+                        continue
+
+                    elif record[key] is None:
+                        # None will be handled by Socrata correctly as a null value
+                        continue
+
+                    else:
+                        # Coerce to string.
+                        record[key] = str(record[key])
+                        continue
+
+        return
+
+
     def _get_metadata(self):
+        print("get socrata metadata")
         res = requests.get(self.url_metadata, auth=self.auth)
         self.metadata = res.json()
 
         return self.metadata
+
 
     def _get_fieldnames(self):
         self.fieldnames = [
