@@ -13,10 +13,12 @@ from datautil import mills_to_unix, iso_to_unix, lower_case_keys
 
 import pdb
 
+
 class Soda(object):
     """
     Class to query and publish open data via the Socrata Open Data API (SODA)
     """
+
     def __init__(
         self,
         auth=None,
@@ -85,7 +87,6 @@ class Soda(object):
         self._handle_response()
         return self.res
 
-
     def _location_fields(self):
         """
         Create special socrata "location" field from x/y values.
@@ -108,7 +109,6 @@ class Soda(object):
 
         return self.records
 
-
     def _upload(self):
         if self.replace:
             res = requests.put(self.url, json=self.records, auth=self.auth)
@@ -118,7 +118,6 @@ class Soda(object):
 
         res.raise_for_status()
         return res.json()
-
 
     def _handle_response(self):
         """
@@ -132,7 +131,6 @@ class Soda(object):
 
         return True
 
-
     def _query(self):
         """
         Query a socrata resource. soql must be a dict formated as { $key : value }
@@ -144,19 +142,26 @@ class Soda(object):
         self.data = res.json()
         return res.json()
 
-
     def _handle_nulls(self):
         # Set empty strings to None. Socrata does not allow empty strings.
         # Convert other string field objects to strings for good measure
 
-        columns = self.metadata['columns']
+        columns = self.metadata["columns"]
         # use this to check out field types
         # list(set([t['dataTypeName'] for t in self.metadata['columns']]))
         #  ['location', 'text', 'number']
-        fields_strings = [column['fieldName'] for column in columns if column['dataTypeName'] == 'text']
-        
-        fields_numbers = [column['fieldName'] for column in columns if column['dataTypeName'] == 'number']
-        
+        fields_strings = [
+            column["fieldName"]
+            for column in columns
+            if column["dataTypeName"] == "text"
+        ]
+
+        fields_numbers = [
+            column["fieldName"]
+            for column in columns
+            if column["dataTypeName"] == "number"
+        ]
+
         for record in self.records:
             for key in record.keys():
                 if key in fields_strings:
@@ -181,14 +186,12 @@ class Soda(object):
 
         return
 
-
     def _get_metadata(self):
         print("get socrata metadata")
         res = requests.get(self.url_metadata, auth=self.auth)
         self.metadata = res.json()
 
         return self.metadata
-
 
     def _get_fieldnames(self):
         self.fieldnames = [
